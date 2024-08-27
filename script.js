@@ -1,56 +1,76 @@
+// Function to get the current user's storage key
+function getUserKey() {
+    const username = prompt("Enter your username:");
+    if (!username) {
+        alert("You need to provide a username.");
+        return null;
+    }
+    return `tracker_${username}`;
+}
+
 // Function to log weight
 function logWeight() {
+    const userKey = getUserKey();
+    if (!userKey) return;
+
     const date = document.getElementById("weight-date").value;
     const weight = document.getElementById("weight-input").value;
 
     if (date && weight) {
-        const weightLog = document.getElementById("weight-log");
-        const logEntry = document.createElement("div");
-        logEntry.textContent = `Date: ${date}, Weight: ${weight} kg`;
-        weightLog.appendChild(logEntry);
-
-        // Save to local storage
-        let storedWeights = JSON.parse(localStorage.getItem("weightLog")) || [];
+        const storedWeights = JSON.parse(localStorage.getItem(userKey + "_weightLog")) || [];
         storedWeights.push({ date, weight });
-        localStorage.setItem("weightLog", JSON.stringify(storedWeights));
+        localStorage.setItem(userKey + "_weightLog", JSON.stringify(storedWeights));
+
+        displayLogs(userKey);
     }
 }
 
 // Function to log exercise
 function logExercise() {
+    const userKey = getUserKey();
+    if (!userKey) return;
+
     const date = document.getElementById("exercise-date").value;
     const exercise = document.getElementById("exercise-name").value;
     const duration = document.getElementById("exercise-duration").value;
 
     if (date && exercise && duration) {
-        const exerciseLog = document.getElementById("exercise-log");
-        const logEntry = document.createElement("div");
-        logEntry.textContent = `Date: ${date}, Exercise: ${exercise}, Duration: ${duration} minutes`;
-        exerciseLog.appendChild(logEntry);
-
-        // Save to local storage
-        let storedExercises = JSON.parse(localStorage.getItem("exerciseLog")) || [];
+        const storedExercises = JSON.parse(localStorage.getItem(userKey + "_exerciseLog")) || [];
         storedExercises.push({ date, exercise, duration });
-        localStorage.setItem("exerciseLog", JSON.stringify(storedExercises));
+        localStorage.setItem(userKey + "_exerciseLog", JSON.stringify(storedExercises));
+
+        displayLogs(userKey);
     }
 }
 
-// Load stored logs when the page loads
-window.onload = function() {
-    const weightLog = JSON.parse(localStorage.getItem("weightLog")) || [];
-    const exerciseLog = JSON.parse(localStorage.getItem("exerciseLog")) || [];
+// Function to display logs for the current user
+function displayLogs(userKey) {
+    const storedWeights = JSON.parse(localStorage.getItem(userKey + "_weightLog")) || [];
+    const storedExercises = JSON.parse(localStorage.getItem(userKey + "_exerciseLog")) || [];
 
-    weightLog.forEach(entry => {
-        const weightLogDiv = document.getElementById("weight-log");
+    const weightLogDiv = document.getElementById("weight-log");
+    const exerciseLogDiv = document.getElementById("exercise-log");
+
+    weightLogDiv.innerHTML = "";
+    exerciseLogDiv.innerHTML = "";
+
+    storedWeights.forEach(entry => {
         const logEntry = document.createElement("div");
         logEntry.textContent = `Date: ${entry.date}, Weight: ${entry.weight} kg`;
         weightLogDiv.appendChild(logEntry);
     });
 
-    exerciseLog.forEach(entry => {
-        const exerciseLogDiv = document.getElementById("exercise-log");
+    storedExercises.forEach(entry => {
         const logEntry = document.createElement("div");
         logEntry.textContent = `Date: ${entry.date}, Exercise: ${entry.exercise}, Duration: ${entry.duration} minutes`;
         exerciseLogDiv.appendChild(logEntry);
     });
+}
+
+// On page load, prompt for the username and load their logs
+window.onload = function() {
+    const userKey = getUserKey();
+    if (userKey) {
+        displayLogs(userKey);
+    }
 };
